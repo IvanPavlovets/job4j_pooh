@@ -13,11 +13,11 @@ public class Req {
      */
     private final String poohMode;
     /**
-     * имя - queue или topic.
+     * имя очереди или топика.
      */
     private final String sourceName;
     /**
-     * содержимое запроса.
+     * текстовое содержимое запроса.
      */
     private final String param;
 
@@ -46,10 +46,29 @@ public class Req {
 
     /**
      * Парсит входящую строку запроса.
+     * Пример разбора первой строки запроса POST,
+     * 1) POST /queue/weather HTTP/1.1 - последовательно идут:
+     * POST - тип, /queue - режим, /weather - имя очереди
+     * 2) содержимое запроса - текстовое сообщение запроса:
+     * в режиме queue и topic, метод POST - предпоследняя строка запроса.
+     * в режиме queue, метод GET - нет текстового сообщения.
+     * в режиме topic, метод GET - стоит третим в массиве параметров запроса,
+     * после poohMode и sourceName (GET /topic/weather/client407 HTTP/1.1)
+     * может быть ()
      * @return Req
      * @param content
      */
     public static Req of(String content) {
-        return new Req(null, null, null, null);
+        String[] parts = content.split(System.lineSeparator());
+        String[] firstLine = parts[0].split(" ");
+        String[] modeNameParam = firstLine[1].split("/");
+        String text = "";
+        if ("POST".equals(firstLine[0])) {
+            text = parts[parts.length - 1];
+        }
+        if ("GET".equals(firstLine[0]) && "topic".equals(modeNameParam[1])) {
+            text = modeNameParam[3];
+        }
+        return new Req(firstLine[0], modeNameParam[1], modeNameParam[2], text);
     }
 }

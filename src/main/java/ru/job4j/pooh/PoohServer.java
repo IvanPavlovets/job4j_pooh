@@ -31,11 +31,11 @@ import java.util.concurrent.Executors;
  * "curl -X POST -d "text=13" http://localhost:9000/queue/weather" - POST
  */
 public class PoohServer {
-    private final HashMap models = new HashMap<>();
+    private final HashMap<String, Service> modes = new HashMap<>();
 
     public void start() {
-        models.put("queue", new QueueService());
-        models.put("topic", new TopicService());
+        modes.put("queue", new QueueService());
+        modes.put("topic", new TopicService());
         ExecutorService pool = Executors.newFixedThreadPool(
                 Runtime.getRuntime().availableProcessors()
         );
@@ -47,10 +47,12 @@ public class PoohServer {
                          InputStream input = socket.getInputStream()) {
                         byte[] buff = new byte[1_000_000];
                         var total = input.read(buff);
-                        var text = new String(Arrays.copyOfRange(buff, 0, total), StandardCharsets.UTF_8);
-                        System.out.println(text);
-                        out.write("HTTP/1.1 200 OK\r\n".getBytes());
-                        out.write(text.getBytes());
+                        var content = new String(Arrays.copyOfRange(buff, 0, total), StandardCharsets.UTF_8);
+                        var req = Req.of(content);
+                        var resp = ((Service) modes.get(req.getPoohMode())).process(req);
+                        String ls = System.lineSeparator();
+                        out.write(("HTTP/1.1 " + resp.status() + ls).getBytes());
+                        out.write((resp.text().concat(ls)).getBytes());
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
