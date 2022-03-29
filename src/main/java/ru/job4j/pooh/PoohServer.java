@@ -39,7 +39,7 @@ public class PoohServer {
         ExecutorService pool = Executors.newFixedThreadPool(
                 Runtime.getRuntime().availableProcessors()
         );
-        try(ServerSocket server = new ServerSocket(9000)) {
+        try (ServerSocket server = new ServerSocket(9000)) {
             while (!server.isClosed()) {
                 Socket socket = server.accept();
                 pool.execute(() -> {
@@ -49,7 +49,7 @@ public class PoohServer {
                         var total = input.read(buff);
                         var content = new String(Arrays.copyOfRange(buff, 0, total), StandardCharsets.UTF_8);
                         var req = Req.of(content);
-                        var resp = ((Service) modes.get(req.getPoohMode())).process(req);
+                        var resp =  modes.get(req.getPoohMode()).process(req);
                         String ls = System.lineSeparator();
                         out.write(("HTTP/1.1 " + resp.status() + ls).getBytes());
                         out.write((resp.text().concat(ls)).getBytes());

@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * индивидуальной очереди получателя и удаляется.
  * GET /topic/weather/1
  */
-public class TopicService implements Service{
+public class TopicService implements Service {
     private final ConcurrentHashMap<String, ConcurrentHashMap<String,
             ConcurrentLinkedQueue<String>>> topics = new ConcurrentHashMap<>();
     @Override
