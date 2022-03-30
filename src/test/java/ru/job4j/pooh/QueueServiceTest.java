@@ -13,11 +13,11 @@ public class QueueServiceTest {
         String paramForPostMethod = "temperature=18";
         /* Добавляем данные в очередь weather. Режим queue */
         queueService.process(
-                new Req("POST", "queue", "weather", paramForPostMethod)
+                new Req("POST", "queue", null, paramForPostMethod)
         );
         /* Забираем данные из очереди weather. Режим queue */
         Resp result = queueService.process(
-                new Req("GET", "queue", "weather", null)
+                new Req("GET", "queue", null, null)
         );
         assertThat(result.text(), is("temperature=18"));
     }
