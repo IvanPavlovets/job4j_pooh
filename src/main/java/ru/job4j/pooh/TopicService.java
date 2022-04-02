@@ -23,35 +23,36 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class TopicService implements Service {
     private final ConcurrentHashMap<String, ConcurrentHashMap<String,
             ConcurrentLinkedQueue<String>>> topics = new ConcurrentHashMap<>();
+
     @Override
     public Resp process(Req req) {
-        String status = "400";
+        String key = req.getSourceName() != null ? req.getSourceName() : "";
         String text = "";
-        if ("POST".equals(req.getHttpRequestType())) {
-            for (var map : topics.values()) {
-                ConcurrentLinkedQueue<String> queue = map.get(req.getSourceName());
-                if (queue != null) {
-                    queue.add(req.getParam());
+        String method = req.getHttpRequestType();
+
+        switch (method) {
+            case "POST":
+                for (var map : topics.values()) {
+                    ConcurrentLinkedQueue<String> queue = map.get(req.getSourceName());
+                    if (queue != null) {
+                        queue.add(req.getParam());
+                    }
                 }
-            }
-            status = "200";
-            text = "Posts are added";
-        }
-        if ("GET".equals(req.getHttpRequestType())) {
-            if (topics.get(req.getParam()) == null) {
-                topics.putIfAbsent(req.getParam(), new ConcurrentHashMap<>());
-                topics.get(req.getParam()).putIfAbsent(req.getSourceName(), new ConcurrentLinkedQueue<>());
-            }
-            if (topics.get(req.getParam()).get(req.getSourceName()) == null) {
-                topics.get(req.getParam()).putIfAbsent(req.getSourceName(), new ConcurrentLinkedQueue<>());
-            } else {
-                text = topics.get(req.getParam()).get(req.getSourceName()).poll();
-                if (text == null) {
-                    text = "";
+                return new Resp("Posts are added", "200");
+            case "GET":
+                if (topics.get(req.getParam()) == null) {
+                    topics.putIfAbsent(req.getParam(), new ConcurrentHashMap<>());
+                    topics.get(req.getParam()).putIfAbsent(key, new ConcurrentLinkedQueue<>());
                 }
-            }
-            status = "200";
+                if (topics.get(req.getParam()).get(req.getSourceName()) == null) {
+                    topics.get(req.getParam()).putIfAbsent(req.getSourceName(), new ConcurrentLinkedQueue<>());
+                } else {
+                    ConcurrentLinkedQueue<String> inerQueue = topics.get(req.getParam()).get(req.getSourceName());
+                    text = inerQueue.peek() != null ? inerQueue.poll() : text;
+                }
+                return new Resp(text, "200");
+            default:
+                return new Resp(text, "501");
         }
-        return new Resp(text, status);
     }
 }

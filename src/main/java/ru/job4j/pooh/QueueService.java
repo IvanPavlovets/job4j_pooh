@@ -1,5 +1,6 @@
 package ru.job4j.pooh;
 
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -14,37 +15,29 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * 2) Если GET - отправитель посылает запрос на получение данных
  * с указанием очереди. Сообщение забирается из начала очереди
  * и удаляется.
- *
  */
 public class QueueService implements Service {
     private final ConcurrentHashMap<String, ConcurrentLinkedQueue<String>> queue = new ConcurrentHashMap<>();
+
     @Override
     public Resp process(Req req) {
+        String key = req.getSourceName() != null ? req.getSourceName() : "";
         String text = "";
-        String status = "400";
-        if ("POST".equals(req.getHttpRequestType())) {
-            ConcurrentLinkedQueue<String> inerQueue = new ConcurrentLinkedQueue<>();
-            inerQueue.add(req.getParam());
-            if (req.getSourceName() != null) {
-                queue.putIfAbsent(req.getSourceName(), inerQueue);
-            } else {
-                queue.putIfAbsent("", inerQueue);
-            }
-            text = "Post added";
-            status = "200";
-        }
-        if ("GET".equals(req.getHttpRequestType())) {
-            if (!queue.isEmpty()) {
-                if (req.getSourceName() != null) {
-                    text = queue.get(req.getSourceName()).poll();
-                } else {
-                    text = queue.get("").poll();
+        String method = req.getHttpRequestType();
+
+        switch (method) {
+            case "POST":
+                queue.putIfAbsent(key, new ConcurrentLinkedQueue<>());
+                queue.get(key).add(req.getParam());
+                return new Resp("Post added", "200");
+            case "GET":
+                if (!queue.isEmpty()) {
+                    ConcurrentLinkedQueue<String> inerQueue = queue.get(key);
+                    text = inerQueue.peek() != null ? inerQueue.poll() : text;
+                    return new Resp(text, "200");
                 }
-                if (text == null) {
-                    text = "";
-                }
-            }
+            default:
+                return new Resp(text, "501");
         }
-        return new Resp(text, status);
     }
 }
