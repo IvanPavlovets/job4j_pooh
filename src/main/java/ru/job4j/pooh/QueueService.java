@@ -31,7 +31,7 @@ public class QueueService implements Service {
                 queue.get(key).add(text);
                 return new Resp(text, "200");
             case "GET":
-                if (!queue.isEmpty() && !queue.get(key).isEmpty() ) {
+                if (!queue.isEmpty() && !queue.get(key).isEmpty()) {
                     ConcurrentLinkedQueue<String> inerQueue = queue.get(key);
                     text = inerQueue.poll();
                     return new Resp(text, "200");
