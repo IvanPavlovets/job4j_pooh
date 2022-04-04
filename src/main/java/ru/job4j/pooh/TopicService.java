@@ -19,6 +19,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * А если топик присутствует, то сообщение забирается из начала
  * индивидуальной очереди получателя и удаляется.
  * GET /topic/weather/1
+ * 3) Если имя метода отличное от GET или POST то нет данных.
  */
 public class TopicService implements Service {
     private final ConcurrentHashMap<String, ConcurrentHashMap<String,
@@ -40,19 +41,13 @@ public class TopicService implements Service {
                 }
                 return new Resp(text, "200");
             case "GET":
-                if (topics.get(text) == null) {
                     topics.putIfAbsent(text, new ConcurrentHashMap<>());
                     topics.get(text).putIfAbsent(key, new ConcurrentLinkedQueue<>());
-                }
-                if (topics.get(text).get(key) == null) {
-                    topics.get(text).putIfAbsent(key, new ConcurrentLinkedQueue<>());
-                } else {
                     ConcurrentLinkedQueue<String> inerQueue = topics.get(text).get(key);
-                    text = inerQueue.poll();
-                }
+                    text = !inerQueue.isEmpty() ? inerQueue.poll() : "";
                 return new Resp(text, "200");
             default:
-                return new Resp(text, "501");
+                return new Resp("", "501");
         }
     }
 }
