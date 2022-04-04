@@ -22,19 +22,21 @@ public class QueueService implements Service {
     @Override
     public Resp process(Req req) {
         String key = req.getSourceName() != null ? req.getSourceName() : "";
-        String text = "";
+        String text = req.getParam() != null ? req.getParam() : "";
         String method = req.getHttpRequestType();
 
         switch (method) {
             case "POST":
                 queue.putIfAbsent(key, new ConcurrentLinkedQueue<>());
-                queue.get(key).add(req.getParam());
-                return new Resp("Post added", "200");
+                queue.get(key).add(text);
+                return new Resp(text, "200");
             case "GET":
-                if (!queue.isEmpty()) {
+                if (!queue.isEmpty() && !queue.get(key).isEmpty() ) {
                     ConcurrentLinkedQueue<String> inerQueue = queue.get(key);
-                    text = inerQueue.peek() != null ? inerQueue.poll() : text;
+                    text = inerQueue.poll();
                     return new Resp(text, "200");
+                } else {
+                    return new Resp("", "204");
                 }
             default:
                 return new Resp(text, "501");

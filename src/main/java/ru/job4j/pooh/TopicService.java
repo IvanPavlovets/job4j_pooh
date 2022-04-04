@@ -27,28 +27,28 @@ public class TopicService implements Service {
     @Override
     public Resp process(Req req) {
         String key = req.getSourceName() != null ? req.getSourceName() : "";
-        String text = "";
+        String text = req.getParam() != null ? req.getParam() : "";
         String method = req.getHttpRequestType();
 
         switch (method) {
             case "POST":
                 for (var map : topics.values()) {
-                    ConcurrentLinkedQueue<String> queue = map.get(req.getSourceName());
+                    ConcurrentLinkedQueue<String> queue = map.get(key);
                     if (queue != null) {
-                        queue.add(req.getParam());
+                        queue.add(text);
                     }
                 }
-                return new Resp("Posts are added", "200");
+                return new Resp(text, "200");
             case "GET":
-                if (topics.get(req.getParam()) == null) {
-                    topics.putIfAbsent(req.getParam(), new ConcurrentHashMap<>());
-                    topics.get(req.getParam()).putIfAbsent(key, new ConcurrentLinkedQueue<>());
+                if (topics.get(text) == null) {
+                    topics.putIfAbsent(text, new ConcurrentHashMap<>());
+                    topics.get(text).putIfAbsent(key, new ConcurrentLinkedQueue<>());
                 }
-                if (topics.get(req.getParam()).get(req.getSourceName()) == null) {
-                    topics.get(req.getParam()).putIfAbsent(req.getSourceName(), new ConcurrentLinkedQueue<>());
+                if (topics.get(text).get(key) == null) {
+                    topics.get(text).putIfAbsent(key, new ConcurrentLinkedQueue<>());
                 } else {
-                    ConcurrentLinkedQueue<String> inerQueue = topics.get(req.getParam()).get(req.getSourceName());
-                    text = inerQueue.peek() != null ? inerQueue.poll() : text;
+                    ConcurrentLinkedQueue<String> inerQueue = topics.get(text).get(key);
+                    text = inerQueue.poll();
                 }
                 return new Resp(text, "200");
             default:

@@ -14,6 +14,7 @@ public class QueueServiceTest {
         queueService.process(
                 new Req("POST", "queue", null, "temperature=18")
         );
+
         /* Забираем данные из очереди weather. Режим queue */
         Resp result = queueService.process(
                 new Req("GET", "queue", null, null)
