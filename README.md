@@ -60,3 +60,5 @@ GET /topic/weather/1
 ![image](https://user-images.githubusercontent.com/20035630/159864571-125884cd-bc83-4a10-8dac-747beec575ab.png)
 
 2. Внесите изменения в файл README.md - внес изменения
+
+Создание ветки из IDEA
