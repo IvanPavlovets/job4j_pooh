@@ -59,5 +59,5 @@ GET /topic/weather/1
 #### Архитектура проекта.
 ![image](https://user-images.githubusercontent.com/20035630/159864571-125884cd-bc83-4a10-8dac-747beec575ab.png)
 
-11111111111111111111
+2222222222
 Объединение зафиксированных изменений v1 2
