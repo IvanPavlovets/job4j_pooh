@@ -60,4 +60,7 @@ GET /topic/weather/1
 ![image](https://user-images.githubusercontent.com/20035630/159864571-125884cd-bc83-4a10-8dac-747beec575ab.png)
 
 
+
+
+
 3.4. Временное хранение. git stash. [#309409]
